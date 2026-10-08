@@ -222,6 +222,34 @@
   }
   .zoom-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
 
+  .nav-btn{
+    pointer-events:auto;
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:1px solid rgba(239,233,218,0.35);
+    background:rgba(14,12,9,0.5);
+    backdrop-filter: blur(6px);
+    color:var(--stage-chrome);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition: background .15s ease;
+  }
+  .nav-btn:hover{ background:rgba(14,12,9,0.72); }
+  .nav-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .nav-btn svg{ width:20px; height:20px; }
+  .nav-prev{ left:12px; }
+  .nav-next{ right:12px; }
+  @media (max-width:420px){
+    .nav-btn{ width:36px; height:36px; }
+    .nav-btn svg{ width:17px; height:17px; }
+  }
+
   .hint{
     pointer-events:none;
     align-self:center;
@@ -300,6 +328,12 @@
         <span class="frame-counter" id="frameCounter">001 / 001</span>
         <button class="zoom-btn" id="zoomBtn" aria-label="Toggle zoom" title="Zoom">+</button>
       </div>
+      <button class="nav-btn nav-prev" id="prevBtn" aria-label="Previous view" title="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="nav-btn nav-next" id="nextBtn" aria-label="Next view" title="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
       <span class="hint" id="hint">drag to explore</span>
     </div>
   </div>
@@ -326,6 +360,9 @@
   const progressFill = document.getElementById('progressFill');
   const zoomBtn = document.getElementById('zoomBtn');
   const fsBtn = document.getElementById('fsBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const STEP = Math.max(2, Math.round(TOTAL_FRAMES * 0.03));
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -380,6 +417,19 @@
   }
 
   zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(); });
+
+  function step(direction){
+    if (zoomed) toggleZoom(false);
+    dismissHint();
+    setFrame(current + direction * STEP);
+  }
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); step(-1); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); step(1); });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft'){ step(-1); }
+    else if (e.key === 'ArrowRight'){ step(1); }
+  });
 
   fsBtn.addEventListener('click', async () => {
     try{
