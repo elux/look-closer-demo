@@ -1,0 +1,460 @@
+<title>The Feature Wall Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F3EFE6;
+    --ink:#171410;
+    --ink-soft:#5B5346;
+    --line:#DED5C2;
+    --surface:#FFFFFF;
+    --brass:#9C7A3C;
+    --brass-ink:#5B461F;
+    --brass-soft:#EFE3C7;
+    --stage:#0E0C09;
+    --stage-chrome:#EFE9DA;
+    --stage-chrome-dim:#9C9280;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --cream:#15130F;
+      --ink:#EFE9DA;
+      --ink-soft:#AFA68F;
+      --line:#332D23;
+      --surface:#1C1813;
+      --brass:#D2A94F;
+      --brass-ink:#F4E2A8;
+      --brass-soft:#2A2314;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --cream:#15130F;
+    --ink:#EFE9DA;
+    --ink-soft:#AFA68F;
+    --line:#332D23;
+    --surface:#1C1813;
+    --brass:#D2A94F;
+    --brass-ink:#F4E2A8;
+    --brass-soft:#2A2314;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+    padding-inline:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .page{
+    width:100%;
+    max-width:460px;
+    padding-block:22px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', ui-monospace, monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass-ink);
+    background:var(--brass-soft);
+    padding:4px 8px;
+    border-radius:4px;
+    white-space:nowrap;
+  }
+  .brand{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.04em;
+  }
+
+  h1{
+    font-family:'Italiana', Georgia, serif;
+    font-weight:400;
+    font-size:clamp(26px,7vw,32px);
+    margin:0;
+    text-wrap:balance;
+    letter-spacing:0.01em;
+  }
+  .sub{
+    margin:0;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    max-width:48ch;
+  }
+
+  .stage-wrap{
+    position:relative;
+    border-radius:14px;
+    overflow:hidden;
+    background:var(--stage);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 18px 40px -20px rgba(0,0,0,0.55);
+  }
+  .stage{
+    position:relative;
+    width:100%;
+    aspect-ratio: 480/854;
+    overflow:hidden;
+    touch-action:none;
+    cursor:grab;
+    background:var(--stage);
+  }
+  .stage.zoomed{ cursor:move; }
+  .stage:active{ cursor:grabbing; }
+
+  .frame-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    pointer-events:none;
+    will-change:transform;
+    transform-origin:center center;
+    transition: transform 0.18s ease-out;
+  }
+  .stage.dragging .frame-img{ transition:none; }
+
+  .loading{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    background:var(--stage);
+    color:var(--stage-chrome-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    z-index:5;
+    transition:opacity .35s ease;
+  }
+  .loading[hidden]{ display:none; }
+  .load-bar{
+    width:120px;
+    height:2px;
+    background:rgba(239,233,218,0.15);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .load-fill{
+    height:100%;
+    width:0%;
+    background:var(--brass);
+  }
+
+  .stage-chrome{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:12px;
+    z-index:4;
+  }
+  .chip-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  .frame-counter{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    color:var(--stage-chrome);
+    background:rgba(14,12,9,0.55);
+    backdrop-filter: blur(6px);
+    padding:4px 8px;
+    border-radius:5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .zoom-btn{
+    pointer-events:auto;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:1px solid rgba(239,233,218,0.35);
+    background:rgba(14,12,9,0.55);
+    backdrop-filter: blur(6px);
+    color:var(--stage-chrome);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:15px;
+    line-height:1;
+  }
+  .zoom-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .hint{
+    pointer-events:none;
+    align-self:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--stage-chrome);
+    background:rgba(14,12,9,0.55);
+    backdrop-filter: blur(6px);
+    padding:6px 12px;
+    border-radius:999px;
+    opacity:1;
+    transition:opacity .5s ease;
+  }
+  .hint.is-hidden{ opacity:0; }
+
+  .progress-track{
+    width:100%;
+    height:3px;
+    border-radius:2px;
+    background:var(--line);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--brass);
+    transition:width .12s linear;
+  }
+
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    letter-spacing:0.03em;
+  }
+
+  .note{
+    border-top:1px solid var(--line);
+    padding-top:12px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.55;
+  }
+  .note strong{ color:var(--ink); }
+</style>
+
+<div class="page">
+  <div class="masthead">
+    <span class="eyebrow">Interactive preview</span>
+    <span class="brand">look&nbsp;closer</span>
+  </div>
+
+  <h1>The Feature Wall Room</h1>
+  <p class="sub">Drag to look around the space the way you would walking through it.</p>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <div class="loading" id="loading">
+        <div class="load-bar"><div class="load-fill" id="loadFill"></div></div>
+        <span id="loadLabel">loading view&hellip;</span>
+      </div>
+      <img class="frame-img" id="frameImg" alt="The Feature Wall Room — interactive view" draggable="false">
+      <div class="stage-chrome">
+        <div class="chip-row">
+          <span class="frame-counter" id="frameCounter">001 / 001</span>
+          <button class="zoom-btn" id="zoomBtn" aria-label="Toggle zoom" title="Zoom">+</button>
+        </div>
+        <span class="hint" id="hint">drag to explore</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="meta-row">
+    <span>184 frames</span>
+    <span>from one phone pan</span>
+  </div>
+
+  <p class="note"><strong>Prototype.</strong> This is an early test of a tool that turns a walkthrough video into something a client can explore themselves. Would this be useful for showing finished rooms &mdash; and what would that be worth to you?</p>
+</div>
+
+<script>
+(function(){
+  const TOTAL_FRAMES = 184;
+  const FRAME_PATH = (i) => `frames/f_${String(i).padStart(3,'0')}.jpg`;
+
+  const stage = document.getElementById('stage');
+  const img = document.getElementById('frameImg');
+  const loading = document.getElementById('loading');
+  const loadFill = document.getElementById('loadFill');
+  const loadLabel = document.getElementById('loadLabel');
+  const hint = document.getElementById('hint');
+  const frameCounter = document.getElementById('frameCounter');
+  const progressFill = document.getElementById('progressFill');
+  const zoomBtn = document.getElementById('zoomBtn');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let current = 1;
+  let dragging = false;
+  let startX = 0, startY = 0;
+  let startFrame = 1;
+  let hasInteracted = false;
+  let zoomed = false;
+  let panX = 0, panY = 0;
+  let panStartX = 0, panStartY = 0;
+  const ZOOM_SCALE = 2.1;
+
+  const images = new Array(TOTAL_FRAMES + 1);
+  let loadedCount = 0;
+
+  function updateCounter(n){
+    const pad = String(TOTAL_FRAMES).length;
+    frameCounter.textContent = `${String(n).padStart(pad,'0')} / ${TOTAL_FRAMES}`;
+  }
+
+  function applyTransform(){
+    if (zoomed){
+      img.style.transform = `scale(${ZOOM_SCALE}) translate(${panX}px, ${panY}px)`;
+    } else {
+      img.style.transform = 'scale(1) translate(0px, 0px)';
+    }
+  }
+
+  function setFrame(n){
+    n = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(n)));
+    current = n;
+    img.src = FRAME_PATH(n);
+    updateCounter(n);
+    progressFill.style.width = ((n - 1) / Math.max(1, TOTAL_FRAMES - 1) * 100) + '%';
+  }
+
+  function dismissHint(){
+    if (!hasInteracted){
+      hasInteracted = true;
+      hint.classList.add('is-hidden');
+    }
+  }
+
+  function toggleZoom(forceOn){
+    zoomed = typeof forceOn === 'boolean' ? forceOn : !zoomed;
+    panX = 0; panY = 0;
+    stage.classList.toggle('zoomed', zoomed);
+    zoomBtn.textContent = zoomed ? '−' : '+';
+    zoomBtn.setAttribute('aria-label', zoomed ? 'Zoom out' : 'Zoom in');
+    applyTransform();
+    dismissHint();
+  }
+
+  zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(); });
+
+  function onDown(x, y){
+    dragging = true;
+    stage.classList.add('dragging');
+    dismissHint();
+    if (zoomed){
+      panStartX = x; panStartY = y;
+    } else {
+      startX = x; startY = y;
+      startFrame = current;
+    }
+  }
+  function onMove(x, y){
+    if (!dragging) return;
+    if (zoomed){
+      const dx = (x - panStartX) / ZOOM_SCALE;
+      const dy = (y - panStartY) / ZOOM_SCALE;
+      panX += dx; panY += dy;
+      panStartX = x; panStartY = y;
+      const maxPan = 90;
+      panX = Math.max(-maxPan, Math.min(maxPan, panX));
+      panY = Math.max(-maxPan, Math.min(maxPan, panY));
+      applyTransform();
+    } else {
+      const dx = x - startX;
+      const sensitivity = Math.max(1.6, (stage.clientWidth / TOTAL_FRAMES) * 0.9);
+      setFrame(startFrame - dx / sensitivity);
+    }
+  }
+  function onUp(){
+    dragging = false;
+    stage.classList.remove('dragging');
+  }
+
+  stage.addEventListener('mousedown', e => onDown(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', onUp);
+  stage.addEventListener('dblclick', (e) => { toggleZoom(); });
+
+  stage.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    onDown(t.clientX, t.clientY);
+  }, {passive:true});
+  stage.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    onMove(t.clientX, t.clientY);
+  }, {passive:true});
+  stage.addEventListener('touchend', onUp);
+
+  function preload(){
+    for (let i = 1; i <= TOTAL_FRAMES; i++){
+      const im = new Image();
+      im.onload = im.onerror = () => {
+        loadedCount++;
+        const pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+        loadFill.style.width = pct + '%';
+        loadLabel.textContent = `loading view… ${pct}%`;
+        if (loadedCount >= TOTAL_FRAMES) startExperience();
+      };
+      im.src = FRAME_PATH(i);
+      images[i] = im;
+    }
+  }
+
+  function startExperience(){
+    loading.style.opacity = '0';
+    setTimeout(() => { loading.hidden = true; }, 380);
+
+    if (reduceMotion){
+      setFrame(Math.round(TOTAL_FRAMES * 0.35));
+      return;
+    }
+
+    const sweepTo = Math.min(TOTAL_FRAMES, Math.round(TOTAL_FRAMES * 0.72));
+    const duration = 1900;
+    const startTime = performance.now();
+
+    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+    function step(now){
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      const eased = easeOutCubic(t);
+      setFrame(1 + eased * (sweepTo - 1));
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  setFrame(1);
+  preload();
+})();
+</script>
