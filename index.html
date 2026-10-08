@@ -134,19 +134,27 @@
   .stage-wrap.zoomed{ cursor:move; }
   .stage-wrap:active{ cursor:grabbing; }
 
-  .frame-img{
-    max-width:100%;
-    max-height:100%;
-    width:auto;
-    height:auto;
-    object-fit:contain;
-    pointer-events:none;
-    will-change:transform;
+  .frame-stack{
+    position:absolute;
+    inset:0;
     transform-origin:center center;
     transition: transform 0.18s ease-out;
-    user-select:none;
+    will-change:transform;
   }
-  .stage-wrap.dragging .frame-img{ transition:none; }
+  .stage-wrap.dragging .frame-stack{ transition:none; }
+
+  .frame-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    pointer-events:none;
+    user-select:none;
+    opacity:0;
+    transition: opacity 90ms linear;
+  }
+  .frame-img.is-active{ opacity:1; }
 
   .loading{
     position:absolute;
@@ -322,7 +330,10 @@
       <div class="load-bar"><div class="load-fill" id="loadFill"></div></div>
       <span id="loadLabel">loading view&hellip;</span>
     </div>
-    <img class="frame-img" id="frameImg" alt="The Feature Wall Room — interactive view" draggable="false">
+    <div class="frame-stack" id="frameStack">
+      <img class="frame-img is-active" id="frameImgA" alt="The Feature Wall Room — interactive view" draggable="false">
+      <img class="frame-img" id="frameImgB" alt="" draggable="false">
+    </div>
     <div class="stage-chrome">
       <div class="chip-row">
         <span class="frame-counter" id="frameCounter">001 / 001</span>
@@ -351,7 +362,10 @@
 
   const app = document.getElementById('app');
   const stage = document.getElementById('stage');
-  const img = document.getElementById('frameImg');
+  const frameStack = document.getElementById('frameStack');
+  const imgA = document.getElementById('frameImgA');
+  const imgB = document.getElementById('frameImgB');
+  let frontIsA = true;
   const loading = document.getElementById('loading');
   const loadFill = document.getElementById('loadFill');
   const loadLabel = document.getElementById('loadLabel');
@@ -385,16 +399,22 @@
 
   function applyTransform(){
     if (zoomed){
-      img.style.transform = `scale(${ZOOM_SCALE}) translate(${panX}px, ${panY}px)`;
+      frameStack.style.transform = `scale(${ZOOM_SCALE}) translate(${panX}px, ${panY}px)`;
     } else {
-      img.style.transform = 'scale(1) translate(0px, 0px)';
+      frameStack.style.transform = 'scale(1) translate(0px, 0px)';
     }
   }
 
   function setFrame(n){
     n = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(n)));
     current = n;
-    img.src = FRAME_PATH(n);
+    const src = FRAME_PATH(n);
+    const front = frontIsA ? imgA : imgB;
+    const back = frontIsA ? imgB : imgA;
+    back.src = src;
+    front.classList.remove('is-active');
+    back.classList.add('is-active');
+    frontIsA = !frontIsA;
     updateCounter(n);
     progressFill.style.width = ((n - 1) / Math.max(1, TOTAL_FRAMES - 1) * 100) + '%';
   }
