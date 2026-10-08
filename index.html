@@ -46,95 +46,107 @@
   html,body{height:100%;}
   body{
     margin:0;
-    background:var(--cream);
+    background:var(--stage);
     color:var(--ink);
     font-family:'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
-    padding-inline:16px;
     display:flex;
     flex-direction:column;
+    overflow:hidden;
+  }
+
+  .app{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+
+  header.bar{
+    flex:none;
+    display:flex;
     align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 16px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    background:var(--cream);
+    border-bottom:1px solid var(--line);
   }
-
-  .page{
-    width:100%;
-    max-width:460px;
-    padding-block:22px 28px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-
-  .masthead{
+  .brandmark{
     display:flex;
     align-items:baseline;
-    justify-content:space-between;
-    gap:10px;
+    gap:9px;
+    min-width:0;
   }
-  .eyebrow{
-    font-family:'IBM Plex Mono', ui-monospace, monospace;
-    font-size:10.5px;
-    letter-spacing:0.14em;
+  .brandmark .mono{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
     text-transform:uppercase;
     color:var(--brass-ink);
     background:var(--brass-soft);
-    padding:4px 8px;
+    padding:3px 7px;
     border-radius:4px;
     white-space:nowrap;
+    flex:none;
   }
-  .brand{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px;
-    color:var(--ink-soft);
-    letter-spacing:0.04em;
-  }
-
   h1{
     font-family:'Italiana', Georgia, serif;
     font-weight:400;
-    font-size:clamp(26px,7vw,32px);
+    font-size:clamp(17px,4vw,21px);
     margin:0;
-    text-wrap:balance;
     letter-spacing:0.01em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
-  .sub{
-    margin:0;
-    font-size:13.5px;
-    color:var(--ink-soft);
-    line-height:1.5;
-    max-width:48ch;
+  .fs-btn{
+    flex:none;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-family:'Hanken Grotesk', sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    color:var(--ink);
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 13px;
+    cursor:pointer;
   }
+  .fs-btn:hover{ border-color:var(--brass); }
+  .fs-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+  .fs-btn svg{ width:14px; height:14px; }
 
   .stage-wrap{
     position:relative;
-    border-radius:14px;
-    overflow:hidden;
+    flex:1;
+    min-height:0;
     background:var(--stage);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 18px 40px -20px rgba(0,0,0,0.55);
-  }
-  .stage{
-    position:relative;
-    width:100%;
-    aspect-ratio: 480/854;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     overflow:hidden;
     touch-action:none;
     cursor:grab;
-    background:var(--stage);
   }
-  .stage.zoomed{ cursor:move; }
-  .stage:active{ cursor:grabbing; }
+  .stage-wrap.zoomed{ cursor:move; }
+  .stage-wrap:active{ cursor:grabbing; }
 
   .frame-img{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+    object-fit:contain;
     pointer-events:none;
     will-change:transform;
     transform-origin:center center;
     transition: transform 0.18s ease-out;
+    user-select:none;
   }
-  .stage.dragging .frame-img{ transition:none; }
+  .stage-wrap.dragging .frame-img{ transition:none; }
 
   .loading{
     position:absolute;
@@ -154,7 +166,7 @@
   }
   .loading[hidden]{ display:none; }
   .load-bar{
-    width:120px;
+    width:140px;
     height:2px;
     background:rgba(239,233,218,0.15);
     border-radius:2px;
@@ -173,7 +185,7 @@
     display:flex;
     flex-direction:column;
     justify-content:space-between;
-    padding:12px;
+    padding:14px;
     z-index:4;
   }
   .chip-row{
@@ -188,14 +200,14 @@
     color:var(--stage-chrome);
     background:rgba(14,12,9,0.55);
     backdrop-filter: blur(6px);
-    padding:4px 8px;
+    padding:5px 9px;
     border-radius:5px;
     font-variant-numeric: tabular-nums;
   }
   .zoom-btn{
     pointer-events:auto;
-    width:30px;
-    height:30px;
+    width:34px;
+    height:34px;
     border-radius:50%;
     border:1px solid rgba(239,233,218,0.35);
     background:rgba(14,12,9,0.55);
@@ -205,7 +217,7 @@
     align-items:center;
     justify-content:center;
     cursor:pointer;
-    font-size:15px;
+    font-size:17px;
     line-height:1;
   }
   .zoom-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
@@ -220,13 +232,23 @@
     color:var(--stage-chrome);
     background:rgba(14,12,9,0.55);
     backdrop-filter: blur(6px);
-    padding:6px 12px;
+    padding:7px 14px;
     border-radius:999px;
     opacity:1;
     transition:opacity .5s ease;
   }
   .hint.is-hidden{ opacity:0; }
 
+  footer.bar{
+    flex:none;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background:var(--cream);
+    border-top:1px solid var(--line);
+  }
   .progress-track{
     width:100%;
     height:3px;
@@ -240,67 +262,60 @@
     background:var(--brass);
     transition:width .12s linear;
   }
-
-  .meta-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-family:'IBM Plex Mono', monospace;
-    font-size:10.5px;
-    color:var(--ink-soft);
-    letter-spacing:0.03em;
-  }
-
   .note{
-    border-top:1px solid var(--line);
-    padding-top:12px;
-    font-size:12px;
+    margin:0;
+    font-size:11.5px;
     color:var(--ink-soft);
-    line-height:1.55;
+    line-height:1.5;
   }
   .note strong{ color:var(--ink); }
+
+  @media (max-width:420px){
+    h1{ font-size:16px; }
+    .fs-btn span{ display:none; }
+    .fs-btn{ padding:8px; }
+  }
 </style>
 
-<div class="page">
-  <div class="masthead">
-    <span class="eyebrow">Interactive preview</span>
-    <span class="brand">look&nbsp;closer</span>
-  </div>
+<div class="app" id="app">
+  <header class="bar">
+    <div class="brandmark">
+      <span class="mono">Interactive preview</span>
+      <h1>The Feature Wall Room</h1>
+    </div>
+    <button class="fs-btn" id="fsBtn" title="View full screen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      <span>Full screen</span>
+    </button>
+  </header>
 
-  <h1>The Feature Wall Room</h1>
-  <p class="sub">Drag to look around the space the way you would walking through it.</p>
-
-  <div class="stage-wrap">
-    <div class="stage" id="stage">
-      <div class="loading" id="loading">
-        <div class="load-bar"><div class="load-fill" id="loadFill"></div></div>
-        <span id="loadLabel">loading view&hellip;</span>
+  <div class="stage-wrap" id="stage">
+    <div class="loading" id="loading">
+      <div class="load-bar"><div class="load-fill" id="loadFill"></div></div>
+      <span id="loadLabel">loading view&hellip;</span>
+    </div>
+    <img class="frame-img" id="frameImg" alt="The Feature Wall Room — interactive view" draggable="false">
+    <div class="stage-chrome">
+      <div class="chip-row">
+        <span class="frame-counter" id="frameCounter">001 / 001</span>
+        <button class="zoom-btn" id="zoomBtn" aria-label="Toggle zoom" title="Zoom">+</button>
       </div>
-      <img class="frame-img" id="frameImg" alt="The Feature Wall Room — interactive view" draggable="false">
-      <div class="stage-chrome">
-        <div class="chip-row">
-          <span class="frame-counter" id="frameCounter">001 / 001</span>
-          <button class="zoom-btn" id="zoomBtn" aria-label="Toggle zoom" title="Zoom">+</button>
-        </div>
-        <span class="hint" id="hint">drag to explore</span>
-      </div>
+      <span class="hint" id="hint">drag to explore</span>
     </div>
   </div>
 
-  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-  <div class="meta-row">
-    <span>184 frames</span>
-    <span>from one phone pan</span>
-  </div>
-
-  <p class="note"><strong>Prototype.</strong> This is an early test of a tool that turns a walkthrough video into something a client can explore themselves. Would this be useful for showing finished rooms &mdash; and what would that be worth to you?</p>
+  <footer class="bar">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="note"><strong>Prototype.</strong> This turns a walkthrough video into something a client can explore themselves. Would this be useful for showing finished rooms &mdash; and what would that be worth to you?</p>
+  </footer>
 </div>
 
 <script>
 (function(){
   const TOTAL_FRAMES = 184;
-  const FRAME_PATH = (i) => `frames/f_${String(i).padStart(3,'0')}.jpg`;
+  const FRAME_PATH = (i) => `frames_enhanced/f_${String(i).padStart(3,'0')}.jpg`;
 
+  const app = document.getElementById('app');
   const stage = document.getElementById('stage');
   const img = document.getElementById('frameImg');
   const loading = document.getElementById('loading');
@@ -310,12 +325,13 @@
   const frameCounter = document.getElementById('frameCounter');
   const progressFill = document.getElementById('progressFill');
   const zoomBtn = document.getElementById('zoomBtn');
+  const fsBtn = document.getElementById('fsBtn');
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let current = 1;
   let dragging = false;
-  let startX = 0, startY = 0;
+  let startX = 0;
   let startFrame = 1;
   let hasInteracted = false;
   let zoomed = false;
@@ -323,7 +339,6 @@
   let panStartX = 0, panStartY = 0;
   const ZOOM_SCALE = 2.1;
 
-  const images = new Array(TOTAL_FRAMES + 1);
   let loadedCount = 0;
 
   function updateCounter(n){
@@ -366,6 +381,16 @@
 
   zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(); });
 
+  fsBtn.addEventListener('click', async () => {
+    try{
+      if (!document.fullscreenElement){
+        await app.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch(e) { /* fullscreen unavailable in this viewer — ignore */ }
+  });
+
   function onDown(x, y){
     dragging = true;
     stage.classList.add('dragging');
@@ -373,7 +398,7 @@
     if (zoomed){
       panStartX = x; panStartY = y;
     } else {
-      startX = x; startY = y;
+      startX = x;
       startFrame = current;
     }
   }
@@ -402,7 +427,7 @@
   stage.addEventListener('mousedown', e => onDown(e.clientX, e.clientY));
   window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
   window.addEventListener('mouseup', onUp);
-  stage.addEventListener('dblclick', (e) => { toggleZoom(); });
+  stage.addEventListener('dblclick', () => toggleZoom());
 
   stage.addEventListener('touchstart', e => {
     const t = e.touches[0];
@@ -425,7 +450,6 @@
         if (loadedCount >= TOTAL_FRAMES) startExperience();
       };
       im.src = FRAME_PATH(i);
-      images[i] = im;
     }
   }
 
