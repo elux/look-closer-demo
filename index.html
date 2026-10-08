@@ -214,9 +214,10 @@
   }
   .zoom-btn{
     pointer-events:auto;
-    width:34px;
+    min-width:34px;
     height:34px;
-    border-radius:50%;
+    padding:0 10px;
+    border-radius:17px;
     border:1px solid rgba(239,233,218,0.35);
     background:rgba(14,12,9,0.55);
     backdrop-filter: blur(6px);
@@ -225,7 +226,9 @@
     align-items:center;
     justify-content:center;
     cursor:pointer;
-    font-size:17px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:500;
     line-height:1;
   }
   .zoom-btn:focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
@@ -385,10 +388,12 @@
   let startX = 0;
   let startFrame = 1;
   let hasInteracted = false;
-  let zoomed = false;
   let panX = 0, panY = 0;
   let panStartX = 0, panStartY = 0;
-  const ZOOM_SCALE = 2.1;
+  const ZOOM_LEVELS = [1, 1.4, 1.8];
+  let zoomIndex = 0;
+  const zoomed = () => zoomIndex > 0;
+  const currentZoomScale = () => ZOOM_LEVELS[zoomIndex];
 
   let loadedCount = 0;
 
@@ -398,8 +403,8 @@
   }
 
   function applyTransform(){
-    if (zoomed){
-      frameStack.style.transform = `scale(${ZOOM_SCALE}) translate(${panX}px, ${panY}px)`;
+    if (zoomed()){
+      frameStack.style.transform = `scale(${currentZoomScale()}) translate(${panX}px, ${panY}px)`;
     } else {
       frameStack.style.transform = 'scale(1) translate(0px, 0px)';
     }
@@ -427,20 +432,22 @@
     }
   }
 
-  function toggleZoom(forceOn){
-    zoomed = typeof forceOn === 'boolean' ? forceOn : !zoomed;
+  function setZoomIndex(i){
+    zoomIndex = ((i % ZOOM_LEVELS.length) + ZOOM_LEVELS.length) % ZOOM_LEVELS.length;
     panX = 0; panY = 0;
-    stage.classList.toggle('zoomed', zoomed);
-    zoomBtn.textContent = zoomed ? '−' : '+';
-    zoomBtn.setAttribute('aria-label', zoomed ? 'Zoom out' : 'Zoom in');
+    stage.classList.toggle('zoomed', zoomed());
+    zoomBtn.textContent = zoomIndex === 0 ? '+' : `${currentZoomScale()}×`;
+    zoomBtn.setAttribute('aria-label', zoomIndex === 0 ? 'Zoom in' : 'Zoom in further or reset');
     applyTransform();
     dismissHint();
   }
 
-  zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleZoom(); });
+  function cycleZoom(){ setZoomIndex(zoomIndex + 1); }
+
+  zoomBtn.addEventListener('click', (e) => { e.stopPropagation(); cycleZoom(); });
 
   function step(direction){
-    if (zoomed) toggleZoom(false);
+    if (zoomed()) setZoomIndex(0);
     dismissHint();
     setFrame(current + direction * STEP);
   }
@@ -466,7 +473,7 @@
     dragging = true;
     stage.classList.add('dragging');
     dismissHint();
-    if (zoomed){
+    if (zoomed()){
       panStartX = x; panStartY = y;
     } else {
       startX = x;
@@ -475,12 +482,13 @@
   }
   function onMove(x, y){
     if (!dragging) return;
-    if (zoomed){
-      const dx = (x - panStartX) / ZOOM_SCALE;
-      const dy = (y - panStartY) / ZOOM_SCALE;
+    if (zoomed()){
+      const scale = currentZoomScale();
+      const dx = (x - panStartX) / scale;
+      const dy = (y - panStartY) / scale;
       panX += dx; panY += dy;
       panStartX = x; panStartY = y;
-      const maxPan = 90;
+      const maxPan = 55 * (scale - 1);
       panX = Math.max(-maxPan, Math.min(maxPan, panX));
       panY = Math.max(-maxPan, Math.min(maxPan, panY));
       applyTransform();
@@ -498,7 +506,7 @@
   stage.addEventListener('mousedown', e => onDown(e.clientX, e.clientY));
   window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
   window.addEventListener('mouseup', onUp);
-  stage.addEventListener('dblclick', () => toggleZoom());
+  stage.addEventListener('dblclick', () => cycleZoom());
 
   stage.addEventListener('touchstart', e => {
     const t = e.touches[0];
