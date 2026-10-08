@@ -488,9 +488,10 @@
       const dy = (y - panStartY) / scale;
       panX += dx; panY += dy;
       panStartX = x; panStartY = y;
-      const maxPan = 55 * (scale - 1);
-      panX = Math.max(-maxPan, Math.min(maxPan, panX));
-      panY = Math.max(-maxPan, Math.min(maxPan, panY));
+      const maxPanX = (scale - 1) * stage.clientWidth / (2 * scale);
+      const maxPanY = (scale - 1) * stage.clientHeight / (2 * scale);
+      panX = Math.max(-maxPanX, Math.min(maxPanX, panX));
+      panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
       applyTransform();
     } else {
       const dx = x - startX;
