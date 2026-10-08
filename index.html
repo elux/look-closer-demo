@@ -406,7 +406,8 @@
   }
 
   function setFrame(n){
-    n = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(n)));
+    n = Math.round(n);
+    n = ((n - 1) % TOTAL_FRAMES + TOTAL_FRAMES) % TOTAL_FRAMES + 1;
     current = n;
     const src = FRAME_PATH(n);
     const front = frontIsA ? imgA : imgB;
